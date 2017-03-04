@@ -28,6 +28,7 @@ typedef struct {
 	double *ycoord;
 
 	// parameters 
+	char *model_name;
 	int model_type;
 	int old_benders;
 	int randomseed;
