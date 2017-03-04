@@ -44,11 +44,9 @@ int main(int argc, char **argv)
 //	if (VRPopt(&inst)) print_error(" error within VRPopt()");		//se !=0 c'è un errore e comunico la cosa
 	clock_t end = clock();	//salvo istante di fine
 
-//	double num_clock = CLOCKS_PER_SEC;
-
 	if (VERBOSE >= 1)
 	{
-		printf("\nSOLVED IN %d CLOCK CYCLES\n", end-begin);
+		printf("\nCOMPLETED IN %.3f SECONDS\n", (double)(end - begin) / CLOCKS_PER_SEC);
 	}
 
 	free_instance(&inst);
