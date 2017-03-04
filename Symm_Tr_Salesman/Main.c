@@ -23,8 +23,8 @@ void free_instance(instance *inst)
 {
 	free(inst->xcoord);
 	free(inst->ycoord);
-	free(inst->load_min);
-	free(inst->load_max);
+	//free(inst->load_min);
+	//free(inst->load_max);
 }
 
 int main(int argc, char **argv)
@@ -44,12 +44,15 @@ int main(int argc, char **argv)
 //	if (VRPopt(&inst)) print_error(" error within VRPopt()");		//se !=0 c'è un errore e comunico la cosa
 	clock_t end = clock();	//salvo istante di fine
 
+//	double num_clock = CLOCKS_PER_SEC;
+
 	if (VERBOSE >= 1)
 	{
-		printf("\nSOLVED IN %d\n", (double)(end - begin) / CLOCKS_PER_SEC);
+		printf("\nSOLVED IN %d CLOCK CYCLES\n", end-begin);
 	}
 
 	free_instance(&inst);
+	system("PAUSE");
 	return 0;
 }
 
@@ -79,32 +82,32 @@ void read_input(instance *inst) // simplified CVRP parser, not all SECTIONs dete
 
 		if (strncmp(par_name, "NAME", 4) == 0)
 		{
-			token1 = strtok(NULL, "");
-			if (VERBOSE >= 10) printf("NAME : %d\n\n", token1, inst->model_name);
+			token1 = strtok(NULL, ": \n");
+			if (VERBOSE >= 10) printf("\nNAME : %s\n", token1, inst->model_name);
 			continue;
 		}
 
 		if (strncmp(par_name, "COMMENT", 7) == 0)
 		{
-			token1 = strtok(NULL, "");
-			if (VERBOSE >= 10) printf("COMMENT : %d\n\n", token1, inst->model_type);
+			token1 = strtok(NULL, "\n");
+			if (VERBOSE >= 10) printf("COMMENT %s\n", token1, inst->model_type);
 			continue;
 		}
 
 		if (strncmp(par_name, "TYPE", 4) == 0)
 		{
-			token1 = strtok(NULL, " :");
+			token1 = strtok(NULL, ": \n");
 			if (strncmp(token1, "TSP", 3) != 0) print_error(" format error:  only TYPE == TSP implemented so far!!!!!!");
-			if (VERBOSE >= 10) printf("TYPE : %d\n\n", token1);
+			if (VERBOSE >= 10) printf("TYPE : %s\n", token1);
 			continue;
 		}
 
 		if (strncmp(par_name, "DIMENSION", 9) == 0)
 		{
 			if (inst->nnodes >= 0) print_error(" repeated DIMENSION section in input file");
-			token1 = strtok(NULL, " :");
+			token1 = strtok(NULL, ": \n");
 			inst->nnodes = atoi(token1);
-			if (do_print) printf("DIMENSION : %d\n", inst->nnodes);
+			if (VERBOSE >= 10) printf("DIMENSION : %d\n", inst->nnodes);
 			inst->xcoord = (double *)calloc(inst->nnodes, sizeof(double));
 			inst->ycoord = (double *)calloc(inst->nnodes, sizeof(double));
 			continue;
@@ -112,9 +115,9 @@ void read_input(instance *inst) // simplified CVRP parser, not all SECTIONs dete
 
 		if (strncmp(par_name, "EDGE_WEIGHT_TYPE", 16) == 0)
 		{
-			token1 = strtok(NULL, " :");
+			token1 = strtok(NULL, ": \n");
 			if (strncmp(token1, "EUC_2D", 6) != 0) print_error(" format error:  only EDGE_WEIGHT_TYPE == EUC_2D implemented so far!!!!!!");
-			if (VERBOSE >= 10) printf("EDGE_WEIGHT_TYPE : %d\n\n", token1);
+			if (VERBOSE >= 10) printf("EDGE_WEIGHT_TYPE : %s\n", token1);
 			continue;
 		}
 
@@ -136,11 +139,11 @@ void read_input(instance *inst) // simplified CVRP parser, not all SECTIONs dete
 		{
 			int i = atoi(par_name) - 1;
 			if (i < 0 || i >= inst->nnodes) print_error(" ... unknown node in NODE_COORD_SECTION section");
-			token1 = strtok(NULL, " :,");
-			token2 = strtok(NULL, " :,");
+			token1 = strtok(NULL, " ");
+			token2 = strtok(NULL, "\n");
 			inst->xcoord[i] = atof(token1);
 			inst->ycoord[i] = atof(token2);
-			if (do_print) printf("%4d %15.7lf %15.7lf\n", i + 1, inst->xcoord[i], inst->ycoord[i]);
+			if (VERBOSE >= 10) printf("%4d %15.7lf %15.7lf\n", i + 1, inst->xcoord[i], inst->ycoord[i]);
 			continue;
 		}
 
@@ -174,9 +177,9 @@ void parse_command_line(int argc, char** argv, instance *inst)
 	for (int i = 1; i < argc; i++)
 	{
 		if (strcmp(argv[i], "-file") == 0) { strcpy(inst->input_file, argv[++i]); continue; } 			// input file
-		if (strcmp(argv[i], "-input") == 0) { strcpy(inst->input_file, argv[++i]); continue; } 			// input file
-		if (strcmp(argv[i], "-f") == 0) { strcpy(inst->input_file, argv[++i]); continue; } 				// input file
 		if (strcmp(argv[i], "-time_limit") == 0) { inst->timelimit = atof(argv[++i]); continue; }		// total time limit, atof converte stringa a float
+		/*if (strcmp(argv[i], "-input") == 0) { strcpy(inst->input_file, argv[++i]); continue; } 			// input file
+		if (strcmp(argv[i], "-f") == 0) { strcpy(inst->input_file, argv[++i]); continue; } 				// input file		
 		if (strcmp(argv[i], "-model_type") == 0) { inst->model_type = atoi(argv[++i]); continue; } 	// model type, atoi converte stringa a int
 		if (strcmp(argv[i], "-old_benders") == 0) { inst->old_benders = atoi(argv[++i]); continue; } 	// old benders
 		if (strcmp(argv[i], "-model") == 0) { inst->model_type = atoi(argv[++i]); continue; } 			// model type
@@ -189,15 +192,16 @@ void parse_command_line(int argc, char** argv, instance *inst)
 		if (strcmp(argv[i], "-int") == 0) { inst->integer_costs = 1; continue; } 						// inteher costs
 		if (strcmp(argv[i], "-help") == 0) { help = 1; continue; } 									// help
 		if (strcmp(argv[i], "--help") == 0) { help = 1; continue; } 									// help
+		*/
 		help = 1;
 	}
 
 	if (help || (VERBOSE >= 10))		// print current parameters
 	{
-		printf("\n\navailable parameters (vers. 16-may-2015) --------------------------------------------------\n");
+		printf("\n\navailable parameters (vers. 04-mar-2017) --------------------------------------------------\n");
 		printf("-file %s\n", inst->input_file);
 		printf("-time_limit %lf\n", inst->timelimit);
-		printf("-model_type %d\n", inst->model_type);
+		/*printf("-model_type %d\n", inst->model_type);
 		printf("-old_benders %d\n", inst->old_benders);
 		printf("-seed %d\n", inst->randomseed);
 		printf("-threads %d\n", inst->num_threads);
@@ -207,7 +211,7 @@ void parse_command_line(int argc, char** argv, instance *inst)
 		printf("-node_file %s\n", inst->node_file);
 		printf("-cutoff %lf\n", inst->cutoff);
 		printf("\nenter -help or --help for help\n");
-		printf("----------------------------------------------------------------------------------------------\n\n");
+		printf("----------------------------------------------------------------------------------------------\n\n");*/
 	}
 
 	if (help) exit(1);
