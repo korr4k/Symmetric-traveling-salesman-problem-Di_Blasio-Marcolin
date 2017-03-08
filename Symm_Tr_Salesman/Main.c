@@ -38,7 +38,7 @@ int main(int argc, char **argv)
 
 	parse_command_line(argc, argv, &inst);	//inizializzo l'input  
 
-											//printf(" file %s has %d non-empty lines\n", inst.input_file, number_of_nonempty_lines(inst.input_file)); exit(1);
+	//printf(" file %s has %d non-empty lines\n", inst.input_file, number_of_nonempty_lines(inst.input_file)); exit(1);
 
 	read_input(&inst);
 //	if (VRPopt(&inst)) print_error(" error within VRPopt()");		//se !=0 c'è un errore e comunico la cosa
@@ -176,7 +176,7 @@ void parse_command_line(int argc, char** argv, instance *inst)
 	{
 		if (strcmp(argv[i], "-file") == 0) { strcpy(inst->input_file, argv[++i]); continue; } 			// input file
 		if (strcmp(argv[i], "-time_limit") == 0) { inst->timelimit = atof(argv[++i]); continue; }		// total time limit, atof converte stringa a float
-		/*if (strcmp(argv[i], "-input") == 0) { strcpy(inst->input_file, argv[++i]); continue; } 			// input file
+		if (strcmp(argv[i], "-input") == 0) { strcpy(inst->input_file, argv[++i]); continue; } 			// input file
 		if (strcmp(argv[i], "-f") == 0) { strcpy(inst->input_file, argv[++i]); continue; } 				// input file		
 		if (strcmp(argv[i], "-model_type") == 0) { inst->model_type = atoi(argv[++i]); continue; } 	// model type, atoi converte stringa a int
 		if (strcmp(argv[i], "-old_benders") == 0) { inst->old_benders = atoi(argv[++i]); continue; } 	// old benders
@@ -190,7 +190,7 @@ void parse_command_line(int argc, char** argv, instance *inst)
 		if (strcmp(argv[i], "-int") == 0) { inst->integer_costs = 1; continue; } 						// inteher costs
 		if (strcmp(argv[i], "-help") == 0) { help = 1; continue; } 									// help
 		if (strcmp(argv[i], "--help") == 0) { help = 1; continue; } 									// help
-		*/
+		
 		help = 1;
 	}
 
@@ -199,7 +199,7 @@ void parse_command_line(int argc, char** argv, instance *inst)
 		printf("\n\navailable parameters (vers. 04-mar-2017) --------------------------------------------------\n");
 		printf("-file %s\n", inst->input_file);
 		printf("-time_limit %lf\n", inst->timelimit);
-		/*printf("-model_type %d\n", inst->model_type);
+		printf("-model_type %d\n", inst->model_type);
 		printf("-old_benders %d\n", inst->old_benders);
 		printf("-seed %d\n", inst->randomseed);
 		printf("-threads %d\n", inst->num_threads);
@@ -209,7 +209,7 @@ void parse_command_line(int argc, char** argv, instance *inst)
 		printf("-node_file %s\n", inst->node_file);
 		printf("-cutoff %lf\n", inst->cutoff);
 		printf("\nenter -help or --help for help\n");
-		printf("----------------------------------------------------------------------------------------------\n\n");*/
+		printf("----------------------------------------------------------------------------------------------\n\n");
 	}
 
 	if (help) exit(1);
