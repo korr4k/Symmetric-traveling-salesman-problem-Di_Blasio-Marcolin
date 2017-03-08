@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 
 	time(begin, end);	//Computing the time to execute the process		
 
-	free_instance(&inst);
+	freeInstance(&inst);
 
 	system("PAUSE");
 

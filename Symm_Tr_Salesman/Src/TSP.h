@@ -71,11 +71,11 @@ typedef struct {
 
 //usefull methods
 
-void print_error(const char *err) { printf("\n\n ERROR: %s \n\n", err); fflush(NULL); exit(1); }
+void printError(const char *err) { printf("\n\n ERROR: %s \n\n", err); fflush(NULL); exit(1); }
 
 void debug(const char *err) { printf("\nDEBUG: %s \n", err); fflush(NULL); }
 
-void free_instance(instance *inst)
+void freeInstance(instance *inst)
 {
 	free(inst->coord);
 	free(inst->loadMin);
@@ -86,7 +86,7 @@ void emptyLines(instance inst) {
 
 	if (VERBOSE >= 100) {
 
-		int numEmptyLines = number_of_nonempty_lines(inst.inputFile);
+		int numEmptyLines = numberOfNonemptyLines(inst.inputFile);
 
 		if (numEmptyLines == 0) {
 
@@ -98,7 +98,7 @@ void emptyLines(instance inst) {
 	}
 }
 
-int number_of_nonempty_lines(const char *file)  // warning: the last line NOT counted if it is does not terminate with \n (as it happens with some editors) 
+int numberOfNonemptyLines(const char *file)  // warning: the last line NOT counted if it is does not terminate with \n (as it happens with some editors) 
 {
 	FILE *fin = fopen(file, "r");
 	if (fin == NULL) return 0;
@@ -116,8 +116,8 @@ void time(clock_t begin, clock_t end) {
 }
 
 //inline
-inline int imax(int i1, int i2) { return (i1 > i2) ? i1 : i2; }
-inline double dmin(double d1, double d2) { return (d1 < d2) ? d1 : d2; }
-inline double dmax(double d1, double d2) { return (d1 > d2) ? d1 : d2; }
+inline int iMax(int i1, int i2) { return (i1 > i2) ? i1 : i2; }
+inline double dMin(double d1, double d2) { return (d1 < d2) ? d1 : d2; }
+inline double dMax(double d1, double d2) { return (d1 > d2) ? d1 : d2; }
 
 #endif   /* TSP_H_ */ 
