@@ -1,60 +1,37 @@
 #include "TSP.h"           
 
-void print_error(const char *err);
-void read_input(instance *inst);
-void parse_command_line(int argc, char** argv, instance *inst);
-
-void debug(const char *err) { printf("\nDEBUG: %s \n", err); fflush(NULL); }
-void print_error(const char *err) { printf("\n\n ERROR: %s \n\n", err); fflush(NULL); exit(1); }
-
-int number_of_nonempty_lines(const char *file)  // warning: the last line NOT counted if it is does not terminate with \n (as it happens with some editors) 
-{
-	FILE *fin = fopen(file, "r");
-	if (fin == NULL) return 0;
-	char line[123456];
-	int count = 0;
-	while (fgets(line, sizeof(line), fin) != NULL) { printf(" len %4d\n", (int)strlen(line)); if (strlen(line) > 1) count++; }
-	fclose(fin);
-	return count;
-}
-
-
-void free_instance(instance *inst)
-{
-	free(inst->xcoord);
-	free(inst->ycoord);
-	//free(inst->load_min);
-	//free(inst->load_max);
-}
+void readInput(instance *inst);
+void parseCommandLine(int argc, char** argv, instance *inst);
 
 int main(int argc, char **argv)
 {
-	if (argc < 2) { printf("Usage: %s -help for help\n", argv[0]); exit(1); }		//voglio almeno due parametri, se non li ricevo stampo il comando help ed esco dal programma
-	if (VERBOSE >= 2) { for (int a = 0; a < argc; a++) printf("%s ", argv[a]); printf("\n"); }	//se i parametri sono sufficienti stampo quello che mi è stato passato
+	if (argc < 2) { printf("Usage: %s -help for help\n", argv[0]); exit(1); }	
+	if (VERBOSE >= 2) { for (int a = 0; a < argc; a++) printf("%s ", argv[a]); printf("\n"); }	
 
-	clock_t begin = clock();	//salvo istante di inizio
-							//sarebbe più interessante avere il tempo dedicato dalla cpu al processo
+	clock_t begin = clock();	//Starting to precess
+
 	instance inst;
 
-	parse_command_line(argc, argv, &inst);	//inizializzo l'input  
+	parseCommandLine(argc, argv, &inst);		//initializaion of the instance based on input command line
 
-	//printf(" file %s has %d non-empty lines\n", inst.input_file, number_of_nonempty_lines(inst.input_file)); exit(1);
+	emptyLines(inst);	//calls emptyLines() in TSP.h
 
-	read_input(&inst);
-//	if (VRPopt(&inst)) print_error(" error within VRPopt()");		//se !=0 c'è un errore e comunico la cosa
-	clock_t end = clock();	//salvo istante di fine
+	readInput(&inst);		//reading the input file
 
-	if (VERBOSE >= 1)
-	{
-		printf("\nCOMPLETED IN %.3f SECONDS\n", (double)(end - begin) / CLOCKS_PER_SEC);
-	}
+	//if (VRPopt(&inst)) print_error(" error within VRPopt()");		//se !=0 c'è un errore e comunico la cosa
+
+	clock_t end = clock();	//Ending process
+
+	time(begin, end);	//Computing the time to execute the process		
 
 	free_instance(&inst);
+
 	system("PAUSE");
+
 	return 0;
 }
 
-void read_input(instance *inst) // simplified CVRP parser, not all SECTIONs detected  
+void readInput(instance *inst) // simplified CVRP parser, not all SECTIONs detected  
 {
 
 	FILE *fin = fopen(inst->input_file, "r");
@@ -153,41 +130,41 @@ void read_input(instance *inst) // simplified CVRP parser, not all SECTIONs dete
 
 }
 
-void parse_command_line(int argc, char** argv, instance *inst)
+void parseCommandLine(int argc, char** argv, instance *inst)
 {
 
 	if (VERBOSE >= 100) printf(" running %s with %d parameters \n", argv[0], argc - 1);
 
 	// default   
-	inst->model_type = 0;
-	inst->old_benders = 0;
-	strcpy(inst->input_file, "NULL");	//c fa così le assegnazioni alle stringhe
-	inst->randomseed = 0;
-	inst->num_threads = 0;
-	inst->timelimit = CPX_INFBOUND;		//valore importato da vrp.h che lo ha importanto da cmplx.h
-	inst->cutoff = CPX_INFBOUND;
-	inst->integer_costs = 0;
+	inst->modelType = 0;
+	inst->oldBenders = 0;
+	strcpy(inst->inputFile, "NULL");	
+	inst->randomSeed = 0;
+	inst->nThreads = 0;
+	inst->timeLimit = CPX_INFBOUND;		
+	inst->cutOff = CPX_INFBOUND;
+	inst->integerCosts = 0;
 
-	inst->available_memory = 12000;   			// available memory, in MB, for Cplex execution (e.g., 12000)
-	inst->max_nodes = -1; 						// max n. of branching nodes in the final run (-1 unlimited)        
+	inst->availableMemory = 12000;   			// available memory, in MB, for Cplex execution (e.g., 12000)
+	inst->maxNodes = -1; 						// max n. of branching nodes in the final run (-1 unlimited)        
 
 	int help = 0; if (argc < 1) help = 1;
 	for (int i = 1; i < argc; i++)
 	{
-		if (strcmp(argv[i], "-file") == 0) { strcpy(inst->input_file, argv[++i]); continue; } 			// input file
-		if (strcmp(argv[i], "-time_limit") == 0) { inst->timelimit = atof(argv[++i]); continue; }		// total time limit, atof converte stringa a float
-		if (strcmp(argv[i], "-input") == 0) { strcpy(inst->input_file, argv[++i]); continue; } 			// input file
-		if (strcmp(argv[i], "-f") == 0) { strcpy(inst->input_file, argv[++i]); continue; } 				// input file		
-		if (strcmp(argv[i], "-model_type") == 0) { inst->model_type = atoi(argv[++i]); continue; } 	// model type, atoi converte stringa a int
-		if (strcmp(argv[i], "-old_benders") == 0) { inst->old_benders = atoi(argv[++i]); continue; } 	// old benders
-		if (strcmp(argv[i], "-model") == 0) { inst->model_type = atoi(argv[++i]); continue; } 			// model type
-		if (strcmp(argv[i], "-seed") == 0) { inst->randomseed = abs(atoi(argv[++i])); continue; } 		// random seed
-		if (strcmp(argv[i], "-threads") == 0) { inst->num_threads = atoi(argv[++i]); continue; } 		// n. threads
-		if (strcmp(argv[i], "-memory") == 0) { inst->available_memory = atoi(argv[++i]); continue; }	// available memory (in MB)
-		if (strcmp(argv[i], "-node_file") == 0) { strcpy(inst->node_file, argv[++i]); continue; }		// cplex's node file
-		if (strcmp(argv[i], "-max_nodes") == 0) { inst->max_nodes = atoi(argv[++i]); continue; } 		// max n. of nodes
-		if (strcmp(argv[i], "-cutoff") == 0) { inst->cutoff = atof(argv[++i]); continue; }				// master cutoff
-		if (strcmp(argv[i], "-int") == 0) { inst->integer_costs = 1; continue; } 						// inteher costs
+		if (strcmp(argv[i], "-file") == 0) { strcpy(inst->inputFile, argv[++i]); continue; } 			// input file
+		if (strcmp(argv[i], "-time_limit") == 0) { inst->timeLimit = atof(argv[++i]); continue; }		// total time limit, atof converte stringa a float
+		if (strcmp(argv[i], "-input") == 0) { strcpy(inst->inputFile, argv[++i]); continue; } 			// input file
+		if (strcmp(argv[i], "-f") == 0) { strcpy(inst->inputFile, argv[++i]); continue; } 				// input file		
+		if (strcmp(argv[i], "-model_type") == 0) { inst->modelType = atoi(argv[++i]); continue; } 	// model type, atoi converte stringa a int
+		if (strcmp(argv[i], "-old_benders") == 0) { inst->oldBenders = atoi(argv[++i]); continue; } 	// old benders
+		if (strcmp(argv[i], "-model") == 0) { inst->modelType = atoi(argv[++i]); continue; } 			// model type
+		if (strcmp(argv[i], "-seed") == 0) { inst->randomSeed = abs(atoi(argv[++i])); continue; } 		// random seed
+		if (strcmp(argv[i], "-threads") == 0) { inst->nThreads = atoi(argv[++i]); continue; } 		// n. threads
+		if (strcmp(argv[i], "-memory") == 0) { inst->availableMemory = atoi(argv[++i]); continue; }	// available memory (in MB)
+		if (strcmp(argv[i], "-node_file") == 0) { strcpy(inst->nodeFile, argv[++i]); continue; }		// cplex's node file
+		if (strcmp(argv[i], "-max_nodes") == 0) { inst->maxNodes = atoi(argv[++i]); continue; } 		// max n. of nodes
+		if (strcmp(argv[i], "-cutoff") == 0) { inst->cutOff = atof(argv[++i]); continue; }				// master cutoff
+		if (strcmp(argv[i], "-int") == 0) { inst->integerCosts = 1; continue; } 						// inteher costs
 		if (strcmp(argv[i], "-help") == 0) { help = 1; continue; } 									// help
 		if (strcmp(argv[i], "--help") == 0) { help = 1; continue; } 									// help
 		
@@ -197,17 +174,17 @@ void parse_command_line(int argc, char** argv, instance *inst)
 	if (help || (VERBOSE >= 10))		// print current parameters
 	{
 		printf("\n\navailable parameters (vers. 04-mar-2017) --------------------------------------------------\n");
-		printf("-file %s\n", inst->input_file);
-		printf("-time_limit %lf\n", inst->timelimit);
-		printf("-model_type %d\n", inst->model_type);
-		printf("-old_benders %d\n", inst->old_benders);
-		printf("-seed %d\n", inst->randomseed);
-		printf("-threads %d\n", inst->num_threads);
-		printf("-max_nodes %d\n", inst->max_nodes);
-		printf("-memory %d\n", inst->available_memory);
-		printf("-int %d\n", inst->integer_costs);
-		printf("-node_file %s\n", inst->node_file);
-		printf("-cutoff %lf\n", inst->cutoff);
+		printf("-file %s\n", inst->inputFile);
+		printf("-time_limit %lf\n", inst->timeLimit);
+		printf("-model_type %d\n", inst->modelType);
+		printf("-old_benders %d\n", inst->oldBenders);
+		printf("-seed %d\n", inst->randomSeed);
+		printf("-threads %d\n", inst->nThreads);
+		printf("-max_nodes %d\n", inst->maxNodes);
+		printf("-memory %d\n", inst->availableMemory);
+		printf("-int %d\n", inst->integerCosts);
+		printf("-node_file %s\n", inst->nodeFile);
+		printf("-cutoff %lf\n", inst->cutOff);
 		printf("\nenter -help or --help for help\n");
 		printf("----------------------------------------------------------------------------------------------\n\n");
 	}
