@@ -24,4 +24,12 @@
       <Filter>File di intestazione</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Data\a280.tsp">
+      <Filter>File di risorse</Filter>
+    </None>
+    <None Include="..\Data\att532.tsp">
+      <Filter>File di risorse</Filter>
+    </None>
+  </ItemGroup>
 </Project>

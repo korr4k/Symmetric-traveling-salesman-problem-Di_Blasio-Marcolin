@@ -25,29 +25,19 @@ typedef struct {
 	double x;
 	double y;
 
-} points;
+} point;
 
 typedef struct {
 
 	//input data
 	int nNodes;
-	points *coord;
-	
-	
+	point *coord;
+
 
 	// parameters 
-	char *modelName;
-	int modelType;
-	int oldBenders;
-	int randomSeed;
-	int nThreads;
+	char edgeType[1000];
 	double timeLimit;						// overall time limit, in sec.s
 	char inputFile[1000];		  			// input file
-	char nodeFile[1000];		  			// cplex node file
-	int availableMemory;
-	int maxNodes; 							// max n. of branching nodes in the final run (-1 unlimited)
-	double cutOff; 							// cutoff (upper bound) for master
-	int integerCosts;
 
 	//global data
 	double	tStart;
@@ -69,17 +59,34 @@ typedef struct {
 	int zStart;
 } instance;
 
+//methods
+
+void printError(const char *err);
+void printCoord(instance *inst);
+void debug(const char *err);
+void freeInstance(instance *inst);
+void emptyLines(instance inst);
+int numberOfNonemptyLines(const char *file);
+void elabTime(clock_t begin, clock_t end);
+
 //usefull methods
 
 void printError(const char *err) { printf("\n\n ERROR: %s \n\n", err); fflush(NULL); exit(1); }
+
+void printCoord(instance *inst) 
+{
+	printf("----------------------------------------------------------------------------------------------\n");
+	for (int i = 0; i < inst->nNodes; i++)
+		printf("Point #%d: (%.3f,%.3f)\n", i + 1, inst->coord[i].x, inst->coord[i].y);
+}
 
 void debug(const char *err) { printf("\nDEBUG: %s \n", err); fflush(NULL); }
 
 void freeInstance(instance *inst)
 {
 	free(inst->coord);
-	free(inst->loadMin);
-	free(inst->loadMax);
+	//free(inst->loadMin);
+	//free(inst->loadMax);
 }
 
 void emptyLines(instance inst) {
@@ -109,10 +116,36 @@ int numberOfNonemptyLines(const char *file)  // warning: the last line NOT count
 	return count;
 }
 
-void time(clock_t begin, clock_t end) {
+void elabTime(clock_t begin, clock_t end) {
 
 	if (VERBOSE >= 1) { printf("\nCOMPLETED IN %.3f SECONDS\n", (double)(end - begin) / CLOCKS_PER_SEC); }
 
+}
+
+int dist(point p1, point p2, char* typeP)
+{
+	double xD;
+	double yD;
+	int dIJ;
+
+	if (strcmp(typeP, "EUC_2D", 6) == 0)
+	{
+		xD = p1.x - p2.x;
+		yD = p1.x - p2.y;
+		return dIJ = (int)(sqrt(xD*xD + yD*yD) + 0.5);
+	}
+	else if (strcmp(typeP, "ATT", 6) == 0)
+	{
+		xD = p1.x - p2.x;
+		yD = p1.x - p2.y;
+		double tmp1 = sqrt(xD*xD + yD*yD) / 10.0;
+		dIJ = (sqrt(xD*xD + yD*yD) / 10.0 + 0.5);
+		if (dIJ < tmp1) dIJ = tmp1 + 1;
+		else dIJ = tmp1;
+		return dIJ;		//always integer
+	}
+
+	return -1;
 }
 
 //inline
