@@ -22,44 +22,98 @@
 
 typedef struct {
 
+	double x;
+	double y;
+
+} points;
+
+typedef struct {
+
 	//input data
-	int nnodes;
-	double *xcoord;
-	double *ycoord;
+	int nNodes;
+	points *coord;
+	
+	
 
 	// parameters 
-	char *model_name;
-	int model_type;
-	int old_benders;
-	int randomseed;
-	int num_threads;
-	double timelimit;						// overall time limit, in sec.s
-	char input_file[1000];		  			// input file
-	char node_file[1000];		  			// cplex node file
-	int available_memory;
-	int max_nodes; 							// max n. of branching nodes in the final run (-1 unlimited)
-	double cutoff; 							// cutoff (upper bound) for master
-	int integer_costs;
+	char *modelName;
+	int modelType;
+	int oldBenders;
+	int randomSeed;
+	int nThreads;
+	double timeLimit;						// overall time limit, in sec.s
+	char inputFile[1000];		  			// input file
+	char nodeFile[1000];		  			// cplex node file
+	int availableMemory;
+	int maxNodes; 							// max n. of branching nodes in the final run (-1 unlimited)
+	double cutOff; 							// cutoff (upper bound) for master
+	int integerCosts;
 
 	//global data
-	double	tstart;
-	double zbest;							// best sol. available  
-	double tbest;							// time for the best sol. available  
-	double *best_sol;						// best sol. available    
-	double	best_lb;						// best lower bound available  
-	double *load_min;						// minimum load when leaving a node
-	double *load_max;						// maximum load when leaving a node
+	double	tStart;
+	double zBest;							// best sol. available  
+	double tBest;							// time for the best sol. available  
+	double *bestSol;						// best sol. available    
+	double	bestLb;						// best lower bound available  
+	double *loadMin;						// minimum load when leaving a node
+	double *loadMax;						// maximum load when leaving a node
 
 											// model;     
-	int xstart;
-	int qstart;
-	int bigqstart;
-	int sstart;
-	int bigsstart;
-	int ystart;
-	int fstart;
-	int zstart;
+	int xStart;
+	int qStart;
+	int bigQStart;
+	int sStart;
+	int bigsStart;
+	int yStart;
+	int fStart;
+	int zStart;
 } instance;
+
+//usefull methods
+
+void print_error(const char *err) { printf("\n\n ERROR: %s \n\n", err); fflush(NULL); exit(1); }
+
+void debug(const char *err) { printf("\nDEBUG: %s \n", err); fflush(NULL); }
+
+void free_instance(instance *inst)
+{
+	free(inst->coord);
+	free(inst->loadMin);
+	free(inst->loadMax);
+}
+
+void emptyLines(instance inst) {
+
+	if (VERBOSE >= 100) {
+
+		int numEmptyLines = number_of_nonempty_lines(inst.inputFile);
+
+		if (numEmptyLines == 0) {
+
+			printf("File %s is empty", inst.inputFile); exit(1);
+
+		}
+
+		printf("%d non-empty lines has been read", numEmptyLines);
+	}
+}
+
+int number_of_nonempty_lines(const char *file)  // warning: the last line NOT counted if it is does not terminate with \n (as it happens with some editors) 
+{
+	FILE *fin = fopen(file, "r");
+	if (fin == NULL) return 0;
+	char line[123456];
+	int count = 0;
+	while (fgets(line, sizeof(line), fin) != NULL) { printf(" len %4d\n", (int)strlen(line)); if (strlen(line) > 1) count++; }
+	fclose(fin);
+	return count;
+}
+
+void time(clock_t begin, clock_t end) {
+
+	if (VERBOSE >= 1) { printf("\nCOMPLETED IN %.3f SECONDS\n", (double)(end - begin) / CLOCKS_PER_SEC); }
+
+}
 
 //inline
 inline int imax(int i1, int i2) { return (i1 > i2) ? i1 : i2; }
