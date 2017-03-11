@@ -44,9 +44,7 @@ typedef struct {
 	double zBest;							// best sol. available  
 	double tBest;							// time for the best sol. available  
 	double *bestSol;						// best sol. available    
-	double	bestLb;						// best lower bound available  
-	double *loadMin;						// minimum load when leaving a node
-	double *loadMax;						// maximum load when leaving a node
+	double	bestLb;						// best lower bound available
 
 											// model;     
 	int xStart;

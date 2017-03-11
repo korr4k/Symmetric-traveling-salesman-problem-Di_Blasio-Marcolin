@@ -154,6 +154,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.c" />
+    <ClCompile Include="MipUtilities.c" />
+    <ClCompile Include="TSP.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TSP.h" />

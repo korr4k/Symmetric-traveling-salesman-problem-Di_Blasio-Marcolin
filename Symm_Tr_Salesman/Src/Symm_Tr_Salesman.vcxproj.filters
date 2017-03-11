@@ -18,6 +18,12 @@
     <ClCompile Include="Main.c">
       <Filter>File di origine</Filter>
     </ClCompile>
+    <ClCompile Include="TSP.c">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="MipUtilities.c">
+      <Filter>File di origine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TSP.h">
