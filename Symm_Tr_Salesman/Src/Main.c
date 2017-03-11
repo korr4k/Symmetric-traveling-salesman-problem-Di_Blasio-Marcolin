@@ -1,4 +1,5 @@
-#include "TSP.h"           
+#include "TSP.h" 
+#include "TSP.c"
 
 void readInput(instance *inst);
 void parseCommandLine(int argc, char** argv, instance *inst);
@@ -18,7 +19,7 @@ int main(int argc, char **argv)
 
 	readInput(&inst);		//reading the input file
 
-	//if (VRPopt(&inst)) printError(" error within VRPopt()");		//se !=0 c'è un errore e comunico la cosa
+	if (VRPopt(&inst)) printError(" error within VRPopt()");		//se !=0 c'è un errore e comunico la cosa
 
 	clock_t end = clock();	//Ending process
 
