@@ -51,7 +51,7 @@ typedef struct {
 	int qStart;
 	int bigQStart;
 	int sStart;
-	int bigsStart;
+	int bigSStart;
 	int yStart;
 	int fStart;
 	int zStart;

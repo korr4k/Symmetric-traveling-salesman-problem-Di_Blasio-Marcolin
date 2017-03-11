@@ -1,6 +1,11 @@
 #include "TSP.h"
 #include "MipUtilities.c"
 
+int zPos(int i, int j, instance *inst);
+int VRPopt(instance *inst);
+int timeLimitExpired(instance *inst);
+void buildModel(instance *inst, CPXENVptr env, CPXLPptr lp);
+
 int zPos(int i, int j, instance *inst)
 {
 	if (i == j)
@@ -89,6 +94,8 @@ int timeLimitExpired(instance *inst)
 
 void buildModel(instance *inst, CPXENVptr env, CPXLPptr lp) 
 {
+
+	inst->zStart = -1;
 	
 	double zero = 0.0; // one = 1.0; 	
 	char binary = 'B';
@@ -124,5 +131,7 @@ void buildModel(instance *inst, CPXENVptr env, CPXLPptr lp)
 
 	free(cname[0]);
 	free(cname);
+
+	if (VERBOSE >= -100) CPXwriteprob(env, lp, "model.lp", NULL);
 
 }
