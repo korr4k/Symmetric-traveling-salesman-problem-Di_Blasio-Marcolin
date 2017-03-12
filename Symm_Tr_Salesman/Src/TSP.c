@@ -1,10 +1,6 @@
+#include <cplex.h>
 #include "TSP.h"
-#include "MipUtilities.c"
-
-int zPos(int i, int j, instance *inst);
-int VRPopt(instance *inst);
-int timeLimitExpired(instance *inst);
-void buildModel(instance *inst, CPXENVptr env, CPXLPptr lp);
+#include "MipUtilities.h"
 
 int zPos(int i, int j, instance *inst)
 {
@@ -12,11 +8,10 @@ int zPos(int i, int j, instance *inst)
 		return -1; 
 
 	if (i > j) 
-		return zpos(j, i, inst); 
+		return zPos(j, i, inst); 
 	
 	return inst->zStart + i * inst->nNodes + j - (i + 1)*(i + 2) / 2;
 }
-
 
 int VRPopt(instance *inst)
 {
@@ -46,7 +41,7 @@ int VRPopt(instance *inst)
 														//CPXsetintparam(env, CPX_PARAM_LBHEUR, 1);			// local branching      
 														//CPXsetintparam(env, CPX_PARAM_HEURFREQ, 10);    
 
-														//if ( CPXsetintparam(env, CPX_PARAM_BRDIR, inst->branch) ) print_error("wrong branching flag (-1,0,1)");      
+														//if ( CPXsetintparam(env, CPX_PARAM_BRDIR, inst->branch) ) printError("wrong branching flag (-1,0,1)");      
 														//CPXsetintparam(env, CPX_PARAM_NODESEL, 0);			// depth first      
 
 														//cuts and symmetry
@@ -92,7 +87,7 @@ int timeLimitExpired(instance *inst)
 	return 0;
 }
 
-void buildModel(instance *inst, CPXENVptr env, CPXLPptr lp) 
+void buildModel(instance *inst, CPXENVptr env, CPXLPptr lp)
 {
 
 	inst->zStart = -1;
@@ -104,7 +99,7 @@ void buildModel(instance *inst, CPXENVptr env, CPXLPptr lp)
 	cname[0] = (char *)calloc(100, sizeof(char));
 
 	// add binary var.s y(i,j)   
-	if (inst->zStart != -1) print_error(" ... errore in buildModel(): var. y non può essere ridefinita!");
+	if (inst->zStart != -1) printError(" ... errore in buildModel(): var. y non può essere ridefinita!");
 	inst->zStart = CPXgetnumcols(env, lp); 		// position of the first y(,) variable   
 	for (int i = 0; i < inst->nNodes; i++)
 	{
@@ -113,8 +108,8 @@ void buildModel(instance *inst, CPXENVptr env, CPXLPptr lp)
 			sprintf(cname[0], "z(%d,%d)", i + 1, j + 1);
 			double obj = dist(inst->coord[i], inst->coord[j], inst->edgeType);
 			double ub = 1.0;
-			if (CPXnewcols(env, lp, 1, &obj, &zero, &ub, &binary, cname)) print_error(" ... errato CPXnewcols su z var.s");
-			if (CPXgetnumcols(env, lp) - 1 != zPos(i, j, inst)) print_error(" ... errata posizione per z var.s");
+			if (CPXnewcols(env, lp, 1, &obj, &zero, &ub, &binary, cname)) printError(" ... errato CPXnewcols su z var.s");
+			if (CPXgetnumcols(env, lp) - 1 != zPos(i, j, inst)) printError(" ... errata posizione per z var.s");
 		}
 	}
 
@@ -124,9 +119,9 @@ void buildModel(instance *inst, CPXENVptr env, CPXLPptr lp)
 		double kValue = 2;
 		char sense = 'E';		//tipo vincolo (<=, ecc..) L è <=, G è >=, e E è =
 		sprintf(cname[0], "grado(%d)", i + 1);
-		if (CPXnewrows(env, lp, 1, &kValue, &sense, NULL, cname)) print_error(" errato CPXnewrows [z1]");
+		if (CPXnewrows(env, lp, 1, &kValue, &sense, NULL, cname)) printError(" errato CPXnewrows [z1]");
 		for (int j = 0; j < inst->nNodes; j++) 
-			if (i != j && CPXchgcoef(env, lp, lastRow, zPos(i, j, inst), 1.0)) print_error(" errato CPXchgcoef [z1]");
+			if (i != j && CPXchgcoef(env, lp, lastRow, zPos(i, j, inst), 1.0)) printError(" errato CPXchgcoef [z1]");
 	}
 
 	free(cname[0]);

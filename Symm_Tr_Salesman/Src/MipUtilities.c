@@ -1,10 +1,6 @@
 #include <cplex.h>
 #include "TSP.h"
-
-void mipSetLevelForAllCuts(CPXENVptr env, int level);
-void mipTimelimit(CPXENVptr env, double timelimit, instance *inst);
-int mipUpdateOIncumbent(CPXENVptr env, CPXLPptr lp, instance *inst);
-double mipValue(CPXENVptr env, CPXLPptr lp);
+#include "MipUtilities.h"
 
 void mipSetLevelForAllCuts(CPXENVptr env, int level)
 {
@@ -24,10 +20,10 @@ void mipSetLevelForAllCuts(CPXENVptr env, int level)
 
 void mipTimelimit(CPXENVptr env, double timelimit, instance *inst)
 {
-	double residual_time = inst->tStart + inst->timeLimit - (double)(clock()/CLOCKS_PER_SEC);
-	if (residual_time < 0.0) residual_time = 0.0;
+	double residualTime = inst->tStart + inst->timeLimit - (double)(clock()/CLOCKS_PER_SEC);
+	if (residualTime < 0.0) residualTime = 0.0;
 	CPXsetintparam(env, CPX_PARAM_CLOCKTYPE, 2);
-	CPXsetdblparam(env, CPX_PARAM_TILIM, residual_time); 							// real time
+	CPXsetdblparam(env, CPX_PARAM_TILIM, residualTime); 							// real time
 	CPXsetdblparam(env, CPX_PARAM_DETTILIM, TICKS_PER_SECOND*timelimit);			// ticks
 }
 
@@ -50,7 +46,7 @@ int mipUpdateOIncumbent(CPXENVptr env, CPXLPptr lp, instance *inst)
 	if (newsol && (VERBOSE >= 10))
 	{
 		if (VERBOSE >= 100) CPXwritemipstarts(env, lp, "model.mst", 0, 0);
-		printf("... New incumbent of value %20.5lf (hash %12d) found after %7.2lf sec.s \n", inst->zBest, mip_solution_hash(env, lp), inst->tBest);
+		printf("... New incumbent of value %20.5lf (hash %12d) found after %7.2lf sec.s \n", inst->zBest, mipSolutioHash(env, lp), inst->tBest);
 		fflush(NULL);
 	}
 
@@ -62,4 +58,32 @@ double mipValue(CPXENVptr env, CPXLPptr lp)
 	double zz;
 	if (CPXgetobjval(env, lp, &zz)) zz = CPX_INFBOUND;
 	return zz;
+}
+
+int mipSolutioHash(CPXENVptr env, CPXLPptr lp)
+{
+	if (!mipSolutionAvailable(env, lp)) return -1;
+
+	int nCols = CPXgetnumcols(env, lp);
+	double *xStar = (double *)calloc(nCols, sizeof(double));
+	char *cType = (char *)calloc(nCols, sizeof(char));
+	CPXgetx(env, lp, xStar, 0, nCols - 1);
+	CPXgetctype(env, lp, cType, 0, nCols - 1);
+
+	const int maxHash = 123456789;
+	int hash = 0;
+	for (int i = 0; i < nCols; i++)
+	{
+		if (cType[i] == 'B' && xStar[i] > 0.5) hash = (hash + i*i + 17 * i) % maxHash;
+	}
+	free(cType);
+	free(xStar);
+	return hash;
+}
+
+int mipSolutionAvailable(CPXENVptr env, CPXLPptr lp)
+{
+	double zz;
+	if (CPXgetobjval(env, lp, &zz)) return 0;
+	return 1;
 }

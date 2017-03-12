@@ -1,5 +1,5 @@
-#include "TSP.h" 
-#include "TSP.c"
+#include "TSP.h"
+#include "Main.h"
 
 void readInput(instance *inst);
 void parseCommandLine(int argc, char** argv, instance *inst);

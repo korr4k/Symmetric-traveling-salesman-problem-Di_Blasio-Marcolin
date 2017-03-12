@@ -1,4 +1,4 @@
-#ifndef TSP_H_							// "carico" solo una volta il file vrp.h
+#ifndef TSP_H_							
 
 #define TSP_H_
 
@@ -9,7 +9,7 @@
 #include <stdio.h>  
 
 #include <cplex.h>  
-#include <pthread.h>  
+#include <pthread.h> 
 
 #define VERBOSE				    50		// printing level  (=10 only incumbent, =20 little output, =50-60 good, =70 verbose, >=100 cplex log)
 
@@ -59,13 +59,12 @@ typedef struct {
 
 //methods
 
+void buildModel(instance *inst, CPXENVptr env, CPXLPptr lp);
 void printError(const char *err);
 void printCoord(instance *inst);
 void debug(const char *err);
 void freeInstance(instance *inst);
-void emptyLines(instance inst);
-int numberOfNonemptyLines(const char *file);
-void elabTime(clock_t begin, clock_t end);
+int dist(point p1, point p2, char* typeP);
 
 //usefull methods
 
@@ -87,52 +86,19 @@ void freeInstance(instance *inst)
 	//free(inst->loadMax);
 }
 
-void emptyLines(instance inst) {
-
-	if (VERBOSE >= 100) {
-
-		int numEmptyLines = numberOfNonemptyLines(inst.inputFile);
-
-		if (numEmptyLines == 0) {
-
-			printf("File %s is empty", inst.inputFile); exit(1);
-
-		}
-
-		printf("%d non-empty lines has been read", numEmptyLines);
-	}
-}
-
-int numberOfNonemptyLines(const char *file)  // warning: the last line NOT counted if it is does not terminate with \n (as it happens with some editors) 
-{
-	FILE *fin = fopen(file, "r");
-	if (fin == NULL) return 0;
-	char line[123456];
-	int count = 0;
-	while (fgets(line, sizeof(line), fin) != NULL) { printf(" len %4d\n", (int)strlen(line)); if (strlen(line) > 1) count++; }
-	fclose(fin);
-	return count;
-}
-
-void elabTime(clock_t begin, clock_t end) {
-
-	if (VERBOSE >= 1) { printf("\nCOMPLETED IN %.3f SECONDS\n", (double)(end - begin) / CLOCKS_PER_SEC); }
-
-}
-
 int dist(point p1, point p2, char* typeP)
 {
 	double xD;
 	double yD;
 	int dIJ;
 
-	if (strcmp(typeP, "EUC_2D", 6) == 0)
+	if (strcmp(typeP, "EUC_2D") == 0)
 	{
 		xD = p1.x - p2.x;
 		yD = p1.x - p2.y;
 		return dIJ = (int)(sqrt(xD*xD + yD*yD) + 0.5);
 	}
-	else if (strcmp(typeP, "ATT", 6) == 0)
+	else if (strcmp(typeP, "ATT") == 0)
 	{
 		xD = p1.x - p2.x;
 		yD = p1.x - p2.y;
@@ -145,10 +111,5 @@ int dist(point p1, point p2, char* typeP)
 
 	return -1;
 }
-
-//inline
-inline int iMax(int i1, int i2) { return (i1 > i2) ? i1 : i2; }
-inline double dMin(double d1, double d2) { return (d1 < d2) ? d1 : d2; }
-inline double dMax(double d1, double d2) { return (d1 > d2) ? d1 : d2; }
 
 #endif   /* TSP_H_ */ 

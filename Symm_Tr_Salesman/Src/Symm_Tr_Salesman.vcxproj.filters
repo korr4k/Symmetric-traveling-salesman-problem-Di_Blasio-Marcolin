@@ -29,6 +29,12 @@
     <ClInclude Include="TSP.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="Main.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="MipUtilities.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Data\a280.tsp">
